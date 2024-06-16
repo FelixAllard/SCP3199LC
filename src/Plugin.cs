@@ -4,20 +4,16 @@ using BepInEx;
 using LethalLib.Modules;
 using BepInEx.Logging;
 using System.IO;
-using SCP3199.Configuration;
 
 namespace SCP3199 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     [BepInDependency(LethalLib.Plugin.ModGUID)] 
     public class Plugin : BaseUnityPlugin {
         internal static new ManualLogSource Logger = null!;
-        internal static PluginConfig BoundConfig { get; private set; } = null!;
         public static AssetBundle? ModAssets;
 
         private void Awake() {
             Logger = base.Logger;
-            
-            BoundConfig = new PluginConfig(base.Config);
             
             InitializeNetworkBehaviours();
             var bundleName = "modassets";
