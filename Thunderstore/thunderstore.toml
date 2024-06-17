@@ -18,12 +18,12 @@ readme = "./README.md"
 outdir = "./Packages"
 
 [[build.copy]]
-source = "../bin/Release/netstandard2.1/Hamunii.ExampleEnemy.dll"
-target = "plugins/ExampleEnemy/"
+source = "../bin/Release/netstandard2.1/ProjectSCP.SCP3199.dll"
+target = "plugins/SCP3199/"
 
 [[build.copy]]
-source = "../../UnityProject/AssetBundles/StandaloneWindows/modassets"
-target = "plugins/ExampleEnemy/"
+source = "../../SCP3199/AssetBundles/StandaloneWindows/modassets"
+target = "plugins/SCP3199/"
 
 [[build.copy]]
 source = "./CHANGELOG.md"

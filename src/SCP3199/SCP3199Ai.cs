@@ -114,6 +114,7 @@ public partial class  SCP3199AI : ModEnemyAI<SCP3199AI>
             public override bool CanTransitionBeTaken()
             {
                 //IfIsClose enough to destination
+                Plugin.Logger.LogInfo((Vector3.Distance(self.agent.destination, self.transform.position)<1f).ToString());
                 if (Vector3.Distance(self.agent.destination, self.transform.position)<1f)
                     return true;
                 return false;
@@ -125,8 +126,8 @@ public partial class  SCP3199AI : ModEnemyAI<SCP3199AI>
                 {
                     return new LayingEgg();
                 }
+                Plugin.Logger.LogInfo("Hello there!");
                 return new WanderState();
-                
             }
         }
         internal class SawPlayer : AIStateTransition
@@ -162,7 +163,6 @@ public partial class  SCP3199AI : ModEnemyAI<SCP3199AI>
 
         }
         //DONE
-        
     }
 
     private class Chase : AIBehaviorState

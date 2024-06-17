@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SCP3199.SCP3199;
 
-public partial class SCP3199AI : ModEnemyAI<SCP3199AI>
+public partial class SCP3199AI
 {
     private List<Transform> usedNodes = new List<Transform>();
     
