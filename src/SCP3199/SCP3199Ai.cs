@@ -3,17 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using GameNetcodeStuff;
+using JetBrains.Annotations;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace SCP3199.SCP3199;
 
-class SCP3199AI : ModEnemyAI<SCP3199AI>
+public partial class  SCP3199AI : ModEnemyAI<SCP3199AI>
 {
     // We use this list to destroy loaded game objects when plugin is reloaded
     internal static List<GameObject> SCP682Objects = [];
-    
+    internal float stageOfGrowth = 0f;
+    internal bool canAttack = true;
+    // 0-1 : child : Doesn't lay egg and won't attack
+    // 1-2 : Teenager : Lay egg but won't attack
+    // 2++ : Adult : Will attack and Lay egg
     
 
     public enum Speed
@@ -21,15 +26,7 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
         Walking = 4,
         Running = 6
     }
-
-    public void SetAgentSpeed(Speed speed)
-    {
-        agent.speed = (int)speed;
-
-        bool newIsRunning = speed == Speed.Running;
-        if (creatureAnimator.GetBool(Anim.isRunning) != newIsRunning)
-            creatureAnimator.SetBool(Anim.isRunning, newIsRunning);
-    }
+    
     static class Anim
     {
         // do: trigger
@@ -41,7 +38,6 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
         internal const string doLayEgg = "doLayEgg";
         internal const string doAttack = "doAttack";
     }
-    
 
     public override void Start()
     {
@@ -93,8 +89,13 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
         public override void OnStateEntered(Animator creatureAnimator)
         {
             creatureAnimator.SetBool(Anim.isWalking, true);
-            self.SetDestinationToPosition(RoundManager.Instance.outsideAINodes[
-                RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position);
+            if (RoundManager.Instance.IsHost)
+            {
+                self.SetDestinationToPosition(RoundManager.Instance.outsideAINodes[
+                    RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position);
+            }
+            
+            self.agent.autoBraking = true;
         }
 
         public override void AIInterval(Animator creatureAnimator)
@@ -104,6 +105,8 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
 
         public override void OnStateExit(Animator creatureAnimator)
         {
+            agent.ResetPath();
+            self.agent.autoBraking = false;
             creatureAnimator.SetBool(Anim.isWalking, false);
         }
         internal class ArrivedAtDestination : AIStateTransition
@@ -118,10 +121,12 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
 
             public override AIBehaviorState NextState()
             {
-                if (self.isOutside)
-                    return new WanderState();
-                else
+                if (RandomNumberGenerator.GetInt32(3) == 0 && self.stageOfGrowth >= 1) ;
+                {
                     return new LayingEgg();
+                }
+                return new WanderState();
+                
             }
         }
         internal class SawPlayer : AIStateTransition
@@ -133,13 +138,11 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
                     return true;
                 return false;
             }
-
             public override AIBehaviorState NextState()
             {
                 return new Chase();
             }
         }
-       
     }
 
     private class LayingEgg : AIBehaviorState
@@ -150,7 +153,8 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
 
         public override void OnStateEntered(Animator creatureAnimator)
         {
-
+            creatureAnimator.SetTrigger(Anim.doLayEgg);
+            
         }
 
         public override void OnStateExit(Animator creatureAnimator)
@@ -171,17 +175,30 @@ class SCP3199AI : ModEnemyAI<SCP3199AI>
 
         public override void OnStateEntered(Animator creatureAnimator)
         {
-
+            creatureAnimator.SetBool(Anim.isRunning, true);
+            self.agent.speed = 6f;
+            self.agent.autoBraking = false;
         }
 
         public override void AIInterval(Animator creatureAnimator)
         {
+            if (Vector3.Distance(self.SynchronisedTargetPlayer.transform.position, self.transform.position) < 2)
+            {
+                if (self.canAttack)
+                {
+                    self.canAttack = false;
+                    creatureAnimator.SetTrigger(Anim.doAttack);
+                }
+                
+            }
 
         }
 
         public override void OnStateExit(Animator creatureAnimator)
         {
+            creatureAnimator.SetBool(Anim.isRunning, false);
             
+            self.agent.speed = 4f;
         }
 
         public class DontSeePlayer : AIStateTransition

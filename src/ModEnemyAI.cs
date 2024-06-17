@@ -62,6 +62,7 @@ public class ModEnemyAI<T> : EnemyAI
     internal List<AIStateTransition> GlobalTransitions = new List<AIStateTransition>();
     internal List<AIStateTransition> AllTransitions = new List<AIStateTransition>();
     internal T self = default!;
+    
     [NonSerialized]
     private NetworkVariable<NetworkBehaviourReference> _playerNetVar = new();
     public PlayerControllerB SynchronisedTargetPlayer

@@ -16,7 +16,7 @@ namespace SCP3199 {
             Logger = base.Logger;
             
             InitializeNetworkBehaviours();
-            var bundleName = "modassets";
+            var bundleName = "scp3199modassets";
             ModAssets = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Info.Location), bundleName));
             if (ModAssets == null) {
                 Logger.LogError($"Failed to load custom assets.");
