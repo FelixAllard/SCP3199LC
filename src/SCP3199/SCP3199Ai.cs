@@ -10,7 +10,7 @@ using UnityEngine.AI;
 
 namespace SCP3199.SCP3199;
 
-public partial class  SCP3199AI : ModEnemyAI<SCP3199AI>
+public partial class  SCP3199AI : ModEnemyAI
 {
     // We use this list to destroy loaded game objects when plugin is reloaded
     internal static List<GameObject> SCP682Objects = [];

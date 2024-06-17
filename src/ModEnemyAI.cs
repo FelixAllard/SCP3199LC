@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using GameNetcodeStuff;
+using SCP3199.SCP3199;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -15,14 +16,13 @@ using UnityEngine.AI;
 namespace SCP3199;
 
 // Heavily based on WelcomeToOoblterra's WTOEnemy class
-public class ModEnemyAI<T> : EnemyAI
-    where T : EnemyAI
+public class ModEnemyAI : EnemyAI
 {
     public abstract class AIBehaviorState
     {
         public Vector2 RandomRange = new Vector2(0, 0);
         public int MyRandomInt = 0;
-        public T self = default!;
+        public SCP3199AI self = default!;
         public NavMeshAgent agent = null!;
         public System.Random enemyRandom = null!;
         public abstract void OnStateEntered(Animator creatureAnimator);
@@ -39,7 +39,7 @@ public class ModEnemyAI<T> : EnemyAI
     public abstract class AIStateTransition
     {
         //public int enemyIndex { get; set; }
-        public T self = default!;
+        public SCP3199AI self = default!;
         public abstract bool CanTransitionBeTaken();
         public abstract AIBehaviorState NextState();
     }
@@ -61,7 +61,7 @@ public class ModEnemyAI<T> : EnemyAI
     internal AIStateTransition nextTransition = null!;
     internal List<AIStateTransition> GlobalTransitions = new List<AIStateTransition>();
     internal List<AIStateTransition> AllTransitions = new List<AIStateTransition>();
-    internal T self = default!;
+    internal SCP3199AI self = default!;
     
     [NonSerialized]
     private NetworkVariable<NetworkBehaviourReference> _playerNetVar = new();
