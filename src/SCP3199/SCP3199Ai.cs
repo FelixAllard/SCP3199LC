@@ -14,8 +14,19 @@ public partial class  SCP3199AI : ModEnemyAI
 {
     // We use this list to destroy loaded game objects when plugin is reloaded
     internal static List<GameObject> SCP682Objects = [];
+    internal bool finishedEggPhase = false;
     internal float stageOfGrowth = 0f;
     internal bool canAttack = true;
+    [SerializeField]
+    internal MeshRenderer eggRendererMouth;
+    [SerializeField]
+    internal GameObject mainEgg;
+
+    [SerializeField]
+    internal MeshRenderer mainEggRenderer;
+
+    [SerializeField] 
+    internal ParticleSystem spawningParticles;
     // 0-1 : child : Doesn't lay egg and won't attack
     // 1-2 : Teenager : Lay egg but won't attack
     // 2++ : Adult : Will attack and Lay egg
@@ -41,9 +52,10 @@ public partial class  SCP3199AI : ModEnemyAI
 
     public override void Start()
     {
+        MakeEggMouthVisible(false);
         self = this;
         SCP682Objects.Add(gameObject);
-        InitialState = new WanderState();
+        InitialState = new InEgg();
         if (enemyType.isOutsideEnemy)
         {
             var scale = 4f;
@@ -53,6 +65,14 @@ public partial class  SCP3199AI : ModEnemyAI
         base.Start();
     }
 
+    [ClientRpc]
+    public void ExitEggPhaseClientRpc()
+    {
+        self.stageOfGrowth = 1;
+        self.spawningParticles.Play();
+        self.finishedEggPhase = true;
+        self.mainEggRenderer.enabled = false;
+    }
     public override void HitEnemy(
         int force = 1,
         PlayerControllerB? playerWhoHit = null,
@@ -81,6 +101,43 @@ public partial class  SCP3199AI : ModEnemyAI
     }
     
 
+    private class InEgg : AIBehaviorState
+    {
+        public override List<AIStateTransition> Transitions { get; set; } =
+            [new FinishedEgg()];
+
+        public override void OnStateEntered(Animator creatureAnimator)
+        {
+            
+        }
+
+        public override void AIInterval(Animator creatureAnimator)
+        {
+            
+        }
+
+        public override void OnStateExit(Animator creatureAnimator)
+        {
+            self.mainEgg.GetComponent<MeshRenderer>().enabled = false;
+            self.spawningParticles.Play();
+        }
+        internal class FinishedEgg : AIStateTransition
+        {
+            public override bool CanTransitionBeTaken()
+            {
+                //IfIsClose enough to destination
+                if(self.finishedEggPhase)
+                    return true;
+                return false;
+            }
+
+            public override AIBehaviorState NextState()
+            {
+                
+                return new WanderState();
+            }
+        }
+    }
     private class WanderState : AIBehaviorState
     {
         public override List<AIStateTransition> Transitions { get; set; } =
@@ -122,11 +179,12 @@ public partial class  SCP3199AI : ModEnemyAI
 
             public override AIBehaviorState NextState()
             {
-                if (RandomNumberGenerator.GetInt32(3) == 0 && self.stageOfGrowth >= 1) ;
+                if (RandomNumberGenerator.GetInt32(3) == 0 && self.stageOfGrowth >= 1)
                 {
                     return new LayingEgg();
                 }
                 Plugin.Logger.LogInfo("Hello there!");
+                self.OverrideState(new WanderState());
                 return new WanderState();
             }
         }
@@ -178,6 +236,7 @@ public partial class  SCP3199AI : ModEnemyAI
             creatureAnimator.SetBool(Anim.isRunning, true);
             self.agent.speed = 6f;
             self.agent.autoBraking = false;
+            self.SynchronisedTargetPlayer = self.CheckLineOfSightForPlayer();
         }
 
         public override void AIInterval(Animator creatureAnimator)
@@ -189,9 +248,8 @@ public partial class  SCP3199AI : ModEnemyAI
                     self.canAttack = false;
                     creatureAnimator.SetTrigger(Anim.doAttack);
                 }
-                
             }
-
+            self.SetDestinationToPosition(self.SynchronisedTargetPlayer.transform.position);
         }
 
         public override void OnStateExit(Animator creatureAnimator)

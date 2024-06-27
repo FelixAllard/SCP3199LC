@@ -48,4 +48,12 @@ public partial class SCP3199AI
 
         return selectedNode;
     }
+
+
+
+    public void MakeEggMouthVisible(bool visible)
+    {
+        self.eggRendererMouth.enabled = visible;
+
+    }
 }

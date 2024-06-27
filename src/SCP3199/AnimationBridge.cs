@@ -14,4 +14,18 @@ public class AnimationBridge : MonoBehaviour
     {
         
     }
+
+    public void FinishThrowingEggAnimationHandle()
+    {
+        
+    }
+
+    public void MakeEggVisibleAnimationHandle()
+    {
+        mainScript.MakeEggMouthVisible(true);
+    }
+    public void MakeEggInvisibleAnimationHandle()
+    {
+        mainScript.MakeEggMouthVisible(false);
+    }
 }
