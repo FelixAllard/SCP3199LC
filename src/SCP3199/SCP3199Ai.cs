@@ -21,15 +21,44 @@ public partial class  SCP3199AI : ModEnemyAI
     internal MeshRenderer eggRendererMouth;
     [SerializeField]
     internal GameObject mainEgg;
+    [SerializeField]
+    internal Transform mouthEggTransform;
 
     [SerializeField]
     internal MeshRenderer mainEggRenderer;
 
     [SerializeField] 
+    internal bool switchOffLayingEgg = false;
+
+    [SerializeField] 
+    internal Transform AttackArea;
+
+    internal Coroutine AttackCoroutine;
+    
+    
+    [SerializeField] 
     internal ParticleSystem spawningParticles;
     // 0-1 : child : Doesn't lay egg and won't attack
     // 1-2 : Teenager : Lay egg but won't attack
     // 2++ : Adult : Will attack and Lay egg
+    [Header("Audio")]
+    [SerializeField] 
+    internal AudioClip _hatchingSound;
+    [SerializeField] 
+    internal AudioClip huntScream;
+    [SerializeField] 
+    internal AudioClip gettingHit;
+
+    [SerializeField] 
+    internal AudioClip attackPreSound;
+    [SerializeField] 
+    internal AudioClip attackSound;
+    [SerializeField] 
+    internal AudioClip[] footStepSound;
+    [SerializeField] 
+    internal AudioClip[] growlSound;
+    
+    
     
 
     public enum Speed
@@ -52,15 +81,11 @@ public partial class  SCP3199AI : ModEnemyAI
 
     public override void Start()
     {
-        MakeEggMouthVisible(false);
         self = this;
-        SCP682Objects.Add(gameObject);
         InitialState = new InEgg();
-        if (enemyType.isOutsideEnemy)
-        {
-            var scale = 4f;
-            gameObject.transform.Find("CrocodileModel").localScale = new(scale, scale, scale);
-        }
+        self.finishedEggPhase = false;
+        MakeEggMouthVisible(false);
+        SCP682Objects.Add(gameObject);
         // agent.radius = 0.5f;
         base.Start();
     }
@@ -92,6 +117,7 @@ public partial class  SCP3199AI : ModEnemyAI
             // so we don't need to call a death animation ourselves.
 
             // We need to stop our search coroutine, because the game does not do that by default.
+            
             StopCoroutine(searchCoroutine);
             KillEnemyOnOwnerClient();
         }
@@ -179,11 +205,10 @@ public partial class  SCP3199AI : ModEnemyAI
 
             public override AIBehaviorState NextState()
             {
-                if (RandomNumberGenerator.GetInt32(3) == 0 && self.stageOfGrowth >= 1)
+                if (UnityEngine.Random.RandomRangeInt(0,3) == 0 && self.stageOfGrowth == 2)
                 {
                     return new LayingEgg();
                 }
-                Plugin.Logger.LogInfo("Hello there!");
                 self.OverrideState(new WanderState());
                 return new WanderState();
             }
@@ -207,18 +232,32 @@ public partial class  SCP3199AI : ModEnemyAI
     private class LayingEgg : AIBehaviorState
     {
         public override List<AIStateTransition> Transitions { get; set; } =
-            [];
+            [new FinishedLaying()];
         //TODO Transition must be done through animation toward walking state
 
         public override void OnStateEntered(Animator creatureAnimator)
         {
-            creatureAnimator.SetTrigger(Anim.doLayEgg);
+            self.PlayAnimationClientRpc(Anim.doLayEgg);
             
         }
 
         public override void OnStateExit(Animator creatureAnimator)
         {
-
+            self.switchOffLayingEgg = false;
+        }
+        internal class FinishedLaying : AIStateTransition
+        {
+            public override bool CanTransitionBeTaken()
+            {
+                //IfIsClose enough to destination
+                if (self.switchOffLayingEgg)
+                    return true;
+                return false;
+            }
+            public override AIBehaviorState NextState()
+            {
+                return new WanderState();
+            }
         }
         //DONE
     }
@@ -234,6 +273,7 @@ public partial class  SCP3199AI : ModEnemyAI
         public override void OnStateEntered(Animator creatureAnimator)
         {
             creatureAnimator.SetBool(Anim.isRunning, true);
+            self.agent.ResetPath();
             self.agent.speed = 6f;
             self.agent.autoBraking = false;
             self.SynchronisedTargetPlayer = self.CheckLineOfSightForPlayer();
@@ -246,7 +286,7 @@ public partial class  SCP3199AI : ModEnemyAI
                 if (self.canAttack)
                 {
                     self.canAttack = false;
-                    creatureAnimator.SetTrigger(Anim.doAttack);
+                    self.PlayAnimationClientRpc(Anim.doAttack);
                 }
             }
             self.SetDestinationToPosition(self.SynchronisedTargetPlayer.transform.position);
@@ -254,7 +294,7 @@ public partial class  SCP3199AI : ModEnemyAI
 
         public override void OnStateExit(Animator creatureAnimator)
         {
-            creatureAnimator.SetBool(Anim.isRunning, false);
+            self.PlayAnimationClientRpc(Anim.isRunning, false);
             
             self.agent.speed = 4f;
         }
@@ -287,4 +327,43 @@ public partial class  SCP3199AI : ModEnemyAI
             }
         }
     }
+    /// <summary>
+    /// Called by animation and resolve damage on player.
+    /// </summary>
+    [ClientRpc]
+    public void SwingAttackHitClientRpc() {
+        int playerLayer = 1 << 3; // This can be found from the game's Asset Ripper output in Unity
+        Collider[] hitColliders = Physics.OverlapBox(self.AttackArea.position, AttackArea.localScale, Quaternion.identity, playerLayer);
+        if(hitColliders.Length > 0){
+            foreach (var player in hitColliders){
+                PlayerControllerB playerControllerB = MeetsStandardPlayerCollisionConditions(player);
+                if (playerControllerB != null)
+                {
+                    self.AttackCoroutine = StartCoroutine(DamagePlayerCoroutine(playerControllerB));
+                }
+            }
+        }
+    }
+    /// <summary>
+    /// Called by attack in VitalCalls
+    /// </summary>
+    /// <param name="playerControllerB">The player which will loose hp</param>
+    /// <returns></returns>
+    IEnumerator DamagePlayerCoroutine(PlayerControllerB playerControllerB)
+    {
+        yield return new WaitForSeconds(0.1f);
+        playerControllerB.DamagePlayer(self.stageOfGrowth==2?40:20);
+        StopCoroutine(self.AttackCoroutine);
+    }
+    [ClientRpc]
+    internal void PlayAnimationClientRpc(string animationName, bool value)
+    {
+        creatureAnimator.SetBool(animationName,value);
+    }
+    [ClientRpc]
+    internal void PlayAnimationClientRpc(string animationName)
+    {
+        creatureAnimator.SetTrigger(animationName);
+    }
+    
 }

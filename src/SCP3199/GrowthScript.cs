@@ -31,11 +31,16 @@ public class GrowthScript : MonoBehaviour
 
         while (elapsedTime < growthDuration1)
         {
+            Debug.Log(elapsedTime);
             // Calculate the fraction of time passed
             float t = elapsedTime / growthDuration1;
-            if (t >= 0.33)
+            if (elapsedTime >= 30f && mainScript.stageOfGrowth == 0)
             {
                 mainScript.ExitEggPhaseClientRpc();
+            }
+            if (elapsedTime >= 60f && mainScript.stageOfGrowth == 1)
+            {
+                mainScript.stageOfGrowth = 2;
             }
             // Lerp the scale
             eggGameObject.transform.localScale = Vector3.Lerp(initialScale1, targetScale1, t);
