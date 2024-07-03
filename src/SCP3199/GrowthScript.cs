@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 namespace SCP3199.SCP3199;
@@ -31,18 +32,19 @@ public class GrowthScript : MonoBehaviour
 
         while (elapsedTime < growthDuration1)
         {
-            Debug.Log(elapsedTime);
             // Calculate the fraction of time passed
             float t = elapsedTime / growthDuration1;
+            
             if (elapsedTime >= 30f && mainScript.stageOfGrowth == 0)
             {
                 mainScript.ExitEggPhaseClientRpc();
             }
-            if (elapsedTime >= 60f && mainScript.stageOfGrowth == 1)
+            if (elapsedTime >= 70f && mainScript.stageOfGrowth == 1)
             {
                 mainScript.stageOfGrowth = 2;
             }
             // Lerp the scale
+            mainScript.self.creatureAnimator.speed = Mathf.Lerp(2.3f, 1.3f,t);
             eggGameObject.transform.localScale = Vector3.Lerp(initialScale1, targetScale1, t);
 
             // Increment the elapsed time

@@ -23,7 +23,6 @@ public partial class  SCP3199AI : ModEnemyAI
     internal GameObject mainEgg;
     [SerializeField]
     internal Transform mouthEggTransform;
-
     [SerializeField]
     internal MeshRenderer mainEggRenderer;
 
@@ -171,10 +170,11 @@ public partial class  SCP3199AI : ModEnemyAI
 
         public override void OnStateEntered(Animator creatureAnimator)
         {
+            
             creatureAnimator.SetBool(Anim.isWalking, true);
             if (RoundManager.Instance.IsHost)
             {
-                self.SetDestinationToPosition(RoundManager.Instance.outsideAINodes[
+                self.SetDestinationClientRpc(RoundManager.Instance.outsideAINodes[
                     RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position);
             }
             
@@ -243,6 +243,7 @@ public partial class  SCP3199AI : ModEnemyAI
         public override void OnStateExit(Animator creatureAnimator)
         {
             self.switchOffLayingEgg = false;
+            agent.ResetPath();
         }
         internal class FinishedLaying : AIStateTransition
         {
@@ -286,7 +287,7 @@ public partial class  SCP3199AI : ModEnemyAI
                     self.PlayAnimationClientRpc(Anim.doAttack);
                 }
             }
-            self.SetDestinationToPosition(self.SynchronisedTargetPlayer.transform.position);
+            self.SetDestinationClientRpc(self.SynchronisedTargetPlayer.transform.position);
         }
         public override void OnStateExit(Animator creatureAnimator)
         {
@@ -364,5 +365,10 @@ public partial class  SCP3199AI : ModEnemyAI
     internal void PlayAnimationClientRpc(string animationName)
     {
         creatureAnimator.SetTrigger(animationName);
+    }
+    [ClientRpc]
+    internal void SetDestinationClientRpc(Vector3 position)
+    {
+        self.agent.SetDestination(position);
     }
 }
