@@ -52,7 +52,7 @@ public partial class  SCP3199AI : ModEnemyAI
     [SerializeField] 
     internal AudioClip attackPreSound;
     [SerializeField] 
-    internal AudioClip attackSound;
+    internal AudioClip layingEgg;
     [SerializeField] 
     internal AudioClip[] footStepSound;
     [SerializeField] 
@@ -277,6 +277,7 @@ public partial class  SCP3199AI : ModEnemyAI
             self.agent.speed = 6f;
             self.agent.autoBraking = false;
             self.SynchronisedTargetPlayer = self.CheckLineOfSightForPlayer();
+            self.creatureVoice.PlayOneShot(self.growlSound[UnityEngine.Random.RandomRangeInt(0,self.growlSound.Length)]);
         }
 
         public override void AIInterval(Animator creatureAnimator)
@@ -295,7 +296,6 @@ public partial class  SCP3199AI : ModEnemyAI
         public override void OnStateExit(Animator creatureAnimator)
         {
             self.PlayAnimationClientRpc(Anim.isRunning, false);
-            
             self.agent.speed = 4f;
         }
 
