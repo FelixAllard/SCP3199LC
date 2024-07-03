@@ -228,7 +228,6 @@ public partial class  SCP3199AI : ModEnemyAI
             }
         }
     }
-
     private class LayingEgg : AIBehaviorState
     {
         public override List<AIStateTransition> Transitions { get; set; } =
@@ -267,9 +266,6 @@ public partial class  SCP3199AI : ModEnemyAI
         // Note: We add one more transition to this afterwards!
         public override List<AIStateTransition> Transitions { get; set; } =
             [new DontSeePlayer()];
-
-        
-
         public override void OnStateEntered(Animator creatureAnimator)
         {
             creatureAnimator.SetBool(Anim.isRunning, true);
@@ -292,22 +288,26 @@ public partial class  SCP3199AI : ModEnemyAI
             }
             self.SetDestinationToPosition(self.SynchronisedTargetPlayer.transform.position);
         }
-
         public override void OnStateExit(Animator creatureAnimator)
         {
             self.PlayAnimationClientRpc(Anim.isRunning, false);
             self.agent.speed = 4f;
         }
-
         public class DontSeePlayer : AIStateTransition
         {
-            private int timeWithoutSeeing = 10;
-            private int time = 10;
+            private int timeWithoutSeeing = 200;
+            private int time = 200;
+
+            public DontSeePlayer()
+            {
+                timeWithoutSeeing = 200;
+                time = 200;
+            }
             public override bool CanTransitionBeTaken()
             {
                 if (!self.CheckLineOfSightForPlayer())
                 {
-                    if (timeWithoutSeeing <=0)
+                    if (timeWithoutSeeing ==0)
                     {
                         return true;
                     }
@@ -365,5 +365,4 @@ public partial class  SCP3199AI : ModEnemyAI
     {
         creatureAnimator.SetTrigger(animationName);
     }
-    
 }

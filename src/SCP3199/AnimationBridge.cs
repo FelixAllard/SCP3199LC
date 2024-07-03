@@ -15,12 +15,12 @@ public class AnimationBridge : MonoBehaviour
     public void ThrowUpAnimationHandle()
     {
         var allEnemiesList = new List<SpawnableEnemyWithRarity>();
-        allEnemiesList.AddRange(RoundManager.Instance.currentLevel.Enemies);
+        allEnemiesList.AddRange(RoundManager.Instance.currentLevel.OutsideEnemies);
         var enemyToSpawn = allEnemiesList.Find(x => x.enemyType.enemyName.Equals("scp3199"));
         GameObject flamingoObject = RoundManager.Instance.SpawnEnemyGameObject(
             RoundManager.Instance.GetNavMeshPosition(mainScript.mouthEggTransform.position),
             UnityEngine.Random.RandomRangeInt(0,360),
-            RoundManager.Instance.currentLevel.Enemies.IndexOf(enemyToSpawn),
+            RoundManager.Instance.currentLevel.OutsideEnemies.IndexOf(enemyToSpawn),
             enemyToSpawn.enemyType
         );
     }
