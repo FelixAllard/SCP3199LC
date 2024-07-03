@@ -42,7 +42,7 @@ public class AnimationBridge : MonoBehaviour
 
     public void AttackAnimationHandle()
     {
-        mainScript.self.SwingAttackHitClientRpc();
+        mainScript.self.CallingSwingAttack();
     }
 
     public void EndAttackAnimationHandle()

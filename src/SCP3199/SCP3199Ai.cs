@@ -107,7 +107,10 @@ public partial class  SCP3199AI : ModEnemyAI
         base.HitEnemy(force, playerWhoHit, playHitSFX, hitID);
         if (isEnemyDead)
             return;
-
+        if (stageOfGrowth == 0)
+        {
+            return;
+        }
         enemyHP -= force;
         if (enemyHP <= 0 && !isEnemyDead)
         {
@@ -116,13 +119,20 @@ public partial class  SCP3199AI : ModEnemyAI
             // so we don't need to call a death animation ourselves.
 
             // We need to stop our search coroutine, because the game does not do that by default.
-            
-            StopCoroutine(searchCoroutine);
+            if (searchCoroutine != null)
+            {
+                StopCoroutine(searchCoroutine);
+            }
             KillEnemyOnOwnerClient();
+            
         }
         //if it gets attackes and does not see the player!
-        if (ActiveState is not Chase)
+        if (ActiveState is not Chase && playerWhoHit!=null)
+        {
+            SynchronisedTargetPlayer = playerWhoHit;
             OverrideState(new Chase());
+        }
+
     }
     
 
@@ -174,10 +184,13 @@ public partial class  SCP3199AI : ModEnemyAI
             creatureAnimator.SetBool(Anim.isWalking, true);
             if (RoundManager.Instance.IsHost)
             {
-                self.SetDestinationClientRpc(RoundManager.Instance.outsideAINodes[
+                self.SetDestinationToPositionClientRpc(RoundManager.Instance.outsideAINodes[
                     RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position);
+                if (!self.IsPathValid(self.transform.position, agent.destination))
+                {
+                    OnStateEntered(creatureAnimator);
+                }
             }
-            
             self.agent.autoBraking = true;
         }
 
@@ -197,9 +210,11 @@ public partial class  SCP3199AI : ModEnemyAI
             public override bool CanTransitionBeTaken()
             {
                 //IfIsClose enough to destination
-                Plugin.Logger.LogInfo((Vector3.Distance(self.agent.destination, self.transform.position)<1f).ToString());
-                if (Vector3.Distance(self.agent.destination, self.transform.position)<1f)
+                if (Vector3.Distance(self.agent.destination, self.transform.position) < 1f)
+                {
+                    self.agent.ResetPath();
                     return true;
+                }
                 return false;
             }
 
@@ -218,7 +233,7 @@ public partial class  SCP3199AI : ModEnemyAI
             public override bool CanTransitionBeTaken()
             {
                 //IfIsClose enough to destination
-                if (self.CheckLineOfSightForPlayer())
+                if (self.CheckLineOfSightForPlayer(45f,30,-1))
                     return true;
                 return false;
             }
@@ -287,12 +302,14 @@ public partial class  SCP3199AI : ModEnemyAI
                     self.PlayAnimationClientRpc(Anim.doAttack);
                 }
             }
-            self.SetDestinationClientRpc(self.SynchronisedTargetPlayer.transform.position);
+            self.SetDestinationToPositionClientRpc(self.SynchronisedTargetPlayer.transform.position);
         }
         public override void OnStateExit(Animator creatureAnimator)
         {
+            
             self.PlayAnimationClientRpc(Anim.isRunning, false);
             self.agent.speed = 4f;
+            agent.ResetPath();
         }
         public class DontSeePlayer : AIStateTransition
         {
@@ -328,6 +345,11 @@ public partial class  SCP3199AI : ModEnemyAI
             }
         }
     }
+
+    public void CallingSwingAttack()
+    {
+        SwingAttackHitClientRpc();
+    }
     /// <summary>
     /// Called by animation and resolve damage on player.
     /// </summary>
@@ -337,7 +359,7 @@ public partial class  SCP3199AI : ModEnemyAI
         Collider[] hitColliders = Physics.OverlapBox(self.AttackArea.position, AttackArea.localScale, Quaternion.identity, playerLayer);
         if(hitColliders.Length > 0){
             foreach (var player in hitColliders){
-                PlayerControllerB playerControllerB = MeetsStandardPlayerCollisionConditions(player);
+                PlayerControllerB playerControllerB = player.gameObject.GetComponent<PlayerControllerB>();
                 if (playerControllerB != null)
                 {
                     self.AttackCoroutine = StartCoroutine(DamagePlayerCoroutine(playerControllerB));
@@ -366,9 +388,17 @@ public partial class  SCP3199AI : ModEnemyAI
     {
         creatureAnimator.SetTrigger(animationName);
     }
+
     [ClientRpc]
-    internal void SetDestinationClientRpc(Vector3 position)
+    internal void SetDestinationToPositionClientRpc(Vector3 position)
     {
-        self.agent.SetDestination(position);
+        self.SetDestinationToPosition(position);
+
+    }
+    bool IsPathValid(Vector3 start, Vector3 end)
+    {
+        NavMeshPath path = new NavMeshPath();
+        NavMesh.CalculatePath(start, end, NavMesh.AllAreas, path);
+        return path.status == NavMeshPathStatus.PathComplete;
     }
 }

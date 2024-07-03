@@ -63,24 +63,26 @@ public class ModEnemyAI : EnemyAI
     internal List<AIStateTransition> AllTransitions = new List<AIStateTransition>();
     internal SCP3199AI self = default!;
     
-    [NonSerialized]
-    private NetworkVariable<NetworkBehaviourReference> _playerNetVar = new();
-    public PlayerControllerB SynchronisedTargetPlayer
+    private PlayerControllerB? _targetPlayerForOwner;
+    public new PlayerControllerB? SynchronisedTargetPlayer
     {
         get
         {
-            return (PlayerControllerB)_playerNetVar.Value;
+            if (IsOwner && _targetPlayerForOwner != base.targetPlayer)
+            {
+                if (_targetPlayerForOwner is not null)
+                    SetTargetClientRpc((int)_targetPlayerForOwner.actualClientId);
+                else
+                    SetTargetClientRpc(-1);
+            }
+            return base.targetPlayer;
         }
-        set 
+        set
         {
-            if (value == null)
-            {
-                _playerNetVar.Value = null;
-            }
+            if (value is not null)
+                SetTargetClientRpc((int)value.actualClientId);
             else
-            {
-                _playerNetVar.Value = new NetworkBehaviourReference(value);
-            }
+                SetTargetClientRpc(-1);
         }
     }
 
