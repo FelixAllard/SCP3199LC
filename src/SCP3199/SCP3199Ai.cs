@@ -118,7 +118,8 @@ public partial class  SCP3199AI : ModEnemyAI
 
             // We need to stop our search coroutine, because the game does not do that by default.
             KillEnemyOnOwnerClient();
-            StopCoroutine(searchCoroutine);
+            /*if(searchCoroutine!=null)
+            StopCoroutine(searchCoroutine);*/
         }
         //if it gets attackes and does not see the player!
         if (ActiveState is not Chase)
