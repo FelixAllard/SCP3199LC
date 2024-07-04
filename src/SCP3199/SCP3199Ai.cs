@@ -33,7 +33,7 @@ public partial class  SCP3199AI : ModEnemyAI
     internal Transform AttackArea;
 
     internal Coroutine AttackCoroutine;
-    
+    internal Vector3 destination;
     
     [SerializeField] 
     internal ParticleSystem spawningParticles;
@@ -184,8 +184,9 @@ public partial class  SCP3199AI : ModEnemyAI
             creatureAnimator.SetBool(Anim.isWalking, true);
             if (RoundManager.Instance.IsHost)
             {
-                self.SetDestinationToPositionClientRpc(RoundManager.Instance.outsideAINodes[
-                    RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position);
+                Vector3 vector3 = RoundManager.Instance.outsideAINodes[
+                    RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position;
+                self.SetDestinationToPositionClientRpc(vector3);
                 if (!self.IsPathValid(self.transform.position, agent.destination))
                 {
                     OnStateEntered(creatureAnimator);
@@ -390,9 +391,9 @@ public partial class  SCP3199AI : ModEnemyAI
     }
 
     [ClientRpc]
-    internal void SetDestinationToPositionClientRpc(Vector3 position)
+    void SetDestinationToPositionClientRpc(Vector3 position)
     {
-        self.SetDestinationToPosition(position);
+        SetDestinationToPosition(position);
 
     }
     bool IsPathValid(Vector3 start, Vector3 end)
