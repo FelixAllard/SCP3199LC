@@ -87,6 +87,7 @@ public partial class  SCP3199AI : ModEnemyAI
         SCP682Objects.Add(gameObject);
         // agent.radius = 0.5f;
         base.Start();
+
     }
 
     [ClientRpc]
@@ -116,9 +117,8 @@ public partial class  SCP3199AI : ModEnemyAI
             // so we don't need to call a death animation ourselves.
 
             // We need to stop our search coroutine, because the game does not do that by default.
-            
-            StopCoroutine(searchCoroutine);
             KillEnemyOnOwnerClient();
+            StopCoroutine(searchCoroutine);
         }
         //if it gets attackes and does not see the player!
         if (ActiveState is not Chase)
@@ -172,11 +172,10 @@ public partial class  SCP3199AI : ModEnemyAI
         {
             
             creatureAnimator.SetBool(Anim.isWalking, true);
-            if (RoundManager.Instance.IsHost)
-            {
-                self.SetDestinationClientRpc(RoundManager.Instance.outsideAINodes[
-                    RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position);
-            }
+
+            self.SetDestinationToPosition(RoundManager.Instance.outsideAINodes[
+                RandomNumberGenerator.GetInt32(RoundManager.Instance.outsideAINodes.Length)].transform.position);
+
             
             self.agent.autoBraking = true;
         }
@@ -236,6 +235,7 @@ public partial class  SCP3199AI : ModEnemyAI
 
         public override void OnStateEntered(Animator creatureAnimator)
         {
+            agent.ResetPath();
             self.PlayAnimationClientRpc(Anim.doLayEgg);
             
         }
@@ -287,7 +287,7 @@ public partial class  SCP3199AI : ModEnemyAI
                     self.PlayAnimationClientRpc(Anim.doAttack);
                 }
             }
-            self.SetDestinationClientRpc(self.SynchronisedTargetPlayer.transform.position);
+            self.SetDestinationToPosition(self.SynchronisedTargetPlayer.transform.position);
         }
         public override void OnStateExit(Animator creatureAnimator)
         {
@@ -357,18 +357,14 @@ public partial class  SCP3199AI : ModEnemyAI
         StopCoroutine(self.AttackCoroutine);
     }
     [ClientRpc]
-    internal void PlayAnimationClientRpc(string animationName, bool value)
+    public void PlayAnimationClientRpc(string animationName, bool value)
     {
         creatureAnimator.SetBool(animationName,value);
     }
     [ClientRpc]
-    internal void PlayAnimationClientRpc(string animationName)
+    public void PlayAnimationClientRpc(string animationName)
     {
         creatureAnimator.SetTrigger(animationName);
     }
-    [ClientRpc]
-    internal void SetDestinationClientRpc(Vector3 position)
-    {
-        self.agent.SetDestination(position);
-    }
+
 }
