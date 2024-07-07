@@ -201,7 +201,7 @@ public partial class  SCP3199AI : ModEnemyAI
             public override bool CanTransitionBeTaken()
             {
                 //IfIsClose enough to destination
-                Plugin.Logger.LogInfo((Vector3.Distance(self.agent.destination, self.transform.position)<1f).ToString());
+                //Plugin.Logger.LogInfo((Vector3.Distance(self.agent.destination, self.transform.position)<1f).ToString());
                 if (Vector3.Distance(self.agent.destination, self.transform.position)<1f)
                     return true;
                 return false;
