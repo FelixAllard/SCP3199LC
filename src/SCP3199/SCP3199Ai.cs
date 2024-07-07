@@ -236,11 +236,11 @@ public partial class  SCP3199AI : ModEnemyAI
     {
         public override List<AIStateTransition> Transitions { get; set; } =
             [new FinishedLaying()];
-        //TODO Transition must be done through animation toward walking state
 
         public override void OnStateEntered(Animator creatureAnimator)
         {
             agent.ResetPath();
+            agent.isStopped = true;
             self.PlayAnimationClientRpc(Anim.doLayEgg);
             
         }
@@ -249,6 +249,7 @@ public partial class  SCP3199AI : ModEnemyAI
         {
             self.switchOffLayingEgg = false;
             agent.ResetPath();
+            agent.isStopped = false;
         }
         internal class FinishedLaying : AIStateTransition
         {
