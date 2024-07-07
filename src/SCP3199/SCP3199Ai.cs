@@ -274,13 +274,22 @@ public partial class  SCP3199AI : ModEnemyAI
             self.agent.ResetPath();
             self.agent.speed = 6f;
             self.agent.autoBraking = false;
-            self.SynchronisedTargetPlayer = self.CheckLineOfSightForPlayer();
+            self.targetPlayer = self.CheckLineOfSightForPlayer();
             self.creatureVoice.PlayOneShot(self.growlSound[UnityEngine.Random.RandomRangeInt(0,self.growlSound.Length)]);
         }
 
         public override void AIInterval(Animator creatureAnimator)
         {
-            if (Vector3.Distance(self.SynchronisedTargetPlayer.transform.position, self.transform.position) < 2)
+            if (self.targetPlayer == null)
+            {
+                self.targetPlayer = self.CheckLineOfSightForPlayer();
+                if (self.targetPlayer == null)
+                {
+                    self.OverrideState(new WanderState());
+                }
+                return;
+            } 
+            if (Vector3.Distance(self.targetPlayer.transform.position, self.transform.position) < 2)
             {
                 if (self.canAttack)
                 {
@@ -288,7 +297,7 @@ public partial class  SCP3199AI : ModEnemyAI
                     self.PlayAnimationClientRpc(Anim.doAttack);
                 }
             }
-            self.SetDestinationToPosition(self.SynchronisedTargetPlayer.transform.position);
+            self.SetDestinationToPosition(self.targetPlayer.transform.position);
         }
         public override void OnStateExit(Animator creatureAnimator)
         {
