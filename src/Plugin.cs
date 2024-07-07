@@ -2,13 +2,13 @@
 using System.Reflection;
 using UnityEngine;
 using BepInEx;
-using LethalLib.Modules;
+using LethalBestiary.Modules;
 using BepInEx.Logging;
 using System.IO;
 
 namespace SCP3199 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    [BepInDependency(LethalLib.Plugin.ModGUID)]
+    [BepInDependency(LethalBestiary.Plugin.ModGUID)]
     //TODO Fix unmatched position!
     //TODO Fix no damage on attack
     public class Plugin : BaseUnityPlugin {

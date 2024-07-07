@@ -14,27 +14,31 @@ Description: SCP-3199 denotes a species of sapient Category-5 biological entitie
 ---
 ### In game Description
 Spawn location:
-Outside
+Outside<br>
 Health
-4
+4<br>
 damage
-40
-Movement speed
-A little slower than the players running speed
-
-Door opening speed.
-10 sec
+40<br>
+Movement speed : 
+A little slower than the players running speed<br>
+Door opening speed : 
+10 sec<br>
 Behavior
 Upon death it will enter egg phase
 
+### Roaming :
+it will search for a player and will enter the chasing phase if it finds one, if not, it has a chance of laying an egg.
+### Laying egg :
+Will spit out a new SCP3199 instance out of it's mouth and go back to roaming
 When it spits out eggs it spawns another 3199 that will be in the egg phase.
-Phases.
-Roamin
-It will Roam around like any monster would, every 40-60 seconds it will spit out a Egg, if it sees a player it will enter its chasing phase
-Chasing
-It will very basically go after a person attacking them, sometimes throwing up at them, and when a player gets far enough away they will re enter their roaming phase
-Egg phase
-This phase will only be activated upon its death, where it will slowly hatch and then it will grow a mini version that will grow up to become an adult
+### Chasing
+Will go after the player and try to peck them
+
+
+
+---
+## Future 
+- Will add a long range attack for the monster
 ---
 # Credits
 ```

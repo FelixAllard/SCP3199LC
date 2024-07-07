@@ -7,7 +7,7 @@
 		<!-- This is the name of your mod. This will be used by tcli when building our Thunderstore package. -->
     <Product>SCP3199</Product>
     <!-- Change to whatever version you're currently on. This will be used by tcli when building our Thunderstore package. -->
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <!-- Thunderstore CLI stuff -->
@@ -78,6 +78,9 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="LethalBestiary">
+      <HintPath>..\..\..\FNAF\Foxy\LC-ExampleEnemy-main\Plugin\dlls\LethalBestiary.dll</HintPath>
     </Reference>
   </ItemGroup>
 
