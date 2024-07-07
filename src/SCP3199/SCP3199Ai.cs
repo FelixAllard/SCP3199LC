@@ -105,6 +105,10 @@ public partial class  SCP3199AI : ModEnemyAI
         int hitID = -1
     )
     {
+        if (self.stageOfGrowth < 1)
+        {
+            return;
+        }
         base.HitEnemy(force, playerWhoHit, playHitSFX, hitID);
         if (isEnemyDead)
             return;
