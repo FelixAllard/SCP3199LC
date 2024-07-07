@@ -5,7 +5,7 @@ schemaVersion = "0.0.1"
 repository = "https://thunderstore.io"
 
 [package]
-description = "Adds SCP 3199, the Humans, Refuted to Lethal Company as a new enemy"
+description = "Adds SCP 3199, the Humans, Refuted to Lethal Company as a new enemy [V56 Compatible]"
 websiteUrl = "https://github.com/FelixAllard/SCP3199LC"
 containsNsfwContent = false
 [package.dependencies]
