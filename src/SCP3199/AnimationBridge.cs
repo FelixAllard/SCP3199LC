@@ -14,6 +14,10 @@ public class AnimationBridge : MonoBehaviour
 
     public void ThrowUpAnimationHandle()
     {
+        if (GameObject.FindObjectsOfType<SCP3199AI>().Length > 30)
+        {
+            return;
+        }
         var allEnemiesList = new List<SpawnableEnemyWithRarity>();
         allEnemiesList.AddRange(RoundManager.Instance.currentLevel.Enemies);
         allEnemiesList.AddRange(RoundManager.Instance.currentLevel.OutsideEnemies);
